@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface StudentRepository extends JpaRepository<Student, String> {
     // 根据学号查询学生（校验学生是否存在）
     Optional<Student> findByStudentId(String studentId);
+    // 根据邮箱查询学生
+    Optional<Student> findByEmail(String email);
 }
