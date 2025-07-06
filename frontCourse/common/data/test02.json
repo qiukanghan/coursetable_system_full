@@ -1,0 +1,31 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "123456",
+      "token": "admin_token_123456"
+    },
+    {
+      "id": 2,
+      "username": "testuser",
+      "password": "test123",
+      "token": "user_token_654321"
+    },
+    {
+      "username": "3312020202201909",
+      "password": "123456",
+      "id": 3
+    },
+    {
+      "username": "asd",
+      "password": "12",
+      "id": 4
+    },
+    {
+      "username": "zxzx",
+      "password": "123213",
+      "id": 5
+    }
+  ]
+}
