@@ -5,27 +5,44 @@
 	<button class="btn-add btn-font"  @click="addCourse()">添加课表</button>
 	<button class="btn-exit btn-font"  @click="gotoPage('/pages/index/index')">退出登录</button>
 	
-	  <view class="container">
-		<!-- 按星期分组容器（周一到周日） -->
+	<view class="container">
 		<view class="week-container">
-		  <!-- 循环渲染周一到周日列 -->
-		  <view class="week-column" v-for="week in 7" :key="week">
-			<view class="week-title">
-			  {{ ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][week - 1] }}
+			<view class="week-column" v-for="week in 7" :key="week">
+				<view class="week-title">
+					{{ ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][week - 1] }}
+				</view>
+				<view class="course-item" v-for="(item, index) in getCoursesByWeek(week)" :key="index"
+				:style="{ backgroundColor: item.isMust === '1' ? '#e6f3ff' : 'white' }">
+					<view class="course-title">课程名称：{{ item.name }}</view>
+					<view>发布人：{{ item.time }}</view>
+					<view>时间：{{ formatTime(item.location) }}</view>
+					<view>讲师：{{ item.teacher }}</view>
+					<view>课程ID：{{ item.id }}</view>
+				</view>
 			</view>
-			<!-- 渲染对应星期的课程 -->
-			<view class="course-item" v-for="(item, index) in getCoursesByWeek(week)" :key="index"
-				  :style="{ backgroundColor: item.isMust === '1' ? '#e6f3ff' : 'white' }"
-			>
-			  <view class="course-title">课程名称：{{ item.name }}</view>
-			  <view>发布人：{{ item.time }}</view>
-			  <view>时间：{{ formatTime(item.location) }}</view>
-			  <view>讲师：{{ item.teacher }}</view>
-			  <view>课程ID：{{ item.id }}</view>
-			</view>
-		  </view>
 		</view>
-	  </view>
+	</view>
+	<!-- <view class="container">
+	    <view class="today-title" v-if="titleValue === '日课表'">
+	      今日（{{ ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][todayWeek - 1] }}）课表
+	    </view>
+	    
+	    <view class="course-container">
+	      
+	      <view class="course-item" 
+	            v-for="(item, index) in displayCourses" 
+	            :key="index"
+	            :style="{ backgroundColor: item.isMust === '1' ? '#e6f3ff' : 'white' }">
+	        
+	        <view class="course-title">课程名称：{{ item.name }}</view>
+	        <view>发布人：{{ item.time }}</view>
+	        <view>时间：{{ formatTime(item.location) }}</view>
+	        <view>讲师：{{ item.teacher }}</view>
+	        <view>课程ID：{{ item.id }}</view>
+	      </view>
+	    </view>
+	  </view>  -->
+
 
 	<uni-popup  ref="popupAdd" type="center" v-bind:is-mask-click="true">
 		<view class="popContainer">
@@ -69,39 +86,36 @@
 
 <script setup>
 	import { ref, onMounted } from 'vue'
-	const isWeek=ref(true)
-	function gotoPage(path){
-		  uni.navigateTo({ url: path })
-	}
+	
 	const titleValue=ref('周课表')
 	const otherTitle=ref('日课表')
-	function changeTime(){
-		let temp=titleValue.value;
-		titleValue.value=otherTitle.value;
-		otherTitle.value=temp;
-	}
-	
 	const popupAdd = ref(null)        // 初始弹窗引用
-	function addCourse(){
-		popupAdd.value.open('center')
-	}
+	const courseList = ref([]);
+	const loading = ref(false);
 	const addData = ref({
 	  addName: '',
 	  addTime: '',
 	  addLocation: '',
 	  addTeacher: '',
 	  addMust: ''
-	})
-		
-		
-		
-	const courseList = ref([]);
-	const loading = ref(false);
+	})	
+	function gotoPage(path){
+		  uni.navigateTo({ url: path })
+	}
+	//切换显示
+	function changeTime(){
+		let temp=titleValue.value;
+		titleValue.value=otherTitle.value;
+		otherTitle.value=temp;
+	}
+	function addCourse(){
+		popupAdd.value.open('center')
+	}
 	// 获取课程列表（保持原有逻辑）
 	const getCourseList = () => {
 	  loading.value = true;
 	  uni.request({
-	    url: 'http://localhost:3013/courseList',
+	    url: 'http://localhost:3000/courseList',
 	    method: 'GET',
 	    success: (res) => {
 	      if (res.statusCode === 200) {
@@ -111,7 +125,6 @@
 	    complete: () => loading.value = false
 	  });
 	};
-	
 	// 根据星期数筛选课程（核心排序逻辑）
 	const getCoursesByWeek = (week) => {
 	  // 筛选出时间第一位数字等于当前星期的课程
@@ -121,14 +134,10 @@
 	    return timeWeek === week;
 	  });
 	};
-	
-	// 格式化时间显示（去除星期部分）
-	const formatTime = (timeStr) => {
-	  const parts = timeStr.split('-');
-	  return `${parts[1]}:${parts[2]}`; // 显示 "10:10"
-	};
-	
-	onMounted(() => getCourseList());
+
+	onMounted(() => {
+		getCourseList();
+	});
 	
 </script>
 
@@ -285,4 +294,6 @@
   font-weight: bold;
   margin-bottom: 5px;
 }
+
+	
 </style>
