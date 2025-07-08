@@ -13,17 +13,16 @@
 					{{ ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][week - 1] }}
 				</view>
 				<view class="course-item" v-for="(item, index) in getCoursesByWeek(week)" :key="index"
-				:style="{ backgroundColor: item.isMust === '1' ? '#e6f3ff' : 'white' }">
-					<view class="course-title">课程名称：{{ item.name }}</view>
-					<view>发布人：{{ item.time }}</view>
-					<view>时间：{{ formatTime(item.location) }}</view>
+				:style="{ backgroundColor: item.categoryId === '1' ? '#e6f3ff' : 'white' }">
+					<view class="course-title">课程名称：{{ item.courseName }}</view>
+					<view>时间：{{ formatTime(item.dayOfWeek)}}</view>
+					<view>地点：{{ item.location}}</view>
 					<view>讲师：{{ item.teacher }}</view>
-					<view>课程ID：{{ item.id }}</view>
+					<view>课程ID：{{ item.courseId }}</view>
 				</view>
 			</view>
 		</view>
 	</view>
-
 	<!-- 日课表视图 - 使用v-else控制显示 -->
 	<view class="container day-view" v-else>
 		<view class="day-header">
@@ -31,12 +30,12 @@
 		</view>
 		<view class="day-course-container">
 			<view class="course-item" v-for="(item, index) in todayCourses" :key="index"
-			:style="{ backgroundColor: item.isMust === '1' ? '#e6f3ff' : 'white' }">
-				<view class="course-title">课程名称：{{ item.name }}</view>
-				<view>发布人：{{ item.time }}</view>
-				<view>时间：{{ formatTime(item.location) }}</view>
-				<view>讲师：{{ item.teacher }}</view>
-				<view>课程ID：{{ item.id }}</view>
+			:style="{ backgroundColor: item.categoryId === '1' ? '#e6f3ff' : 'white' }">
+					<view class="course-title">课程名称：{{ item.courseName }}</view>
+					<view>时间：{{ formatTime(item.dayOfWeek)}}</view>
+					<view>地点：{{ item.location}}</view>
+					<view>讲师：{{ item.teacher }}</view>
+					<view>课程ID：{{ item.courseId }}</view>
 			</view>
 			<view class="empty-state" v-if="todayCourses.length === 0">
 				今日没有课程安排
@@ -46,120 +45,144 @@
 
 	<uni-popup  ref="popupAdd" type="center" v-bind:is-mask-click="true">
 		<view class="popContainer">
-			<view class="form-group">
-				<label>课程名：</label>
-				<input type="text"  v-model="addData.addName" placeholder="请输入用户名"/>
-			</view>
+			<label>课程名：</label>
+			<input type="text"  v-model="addData.courseName" placeholder="请输入课程名"/>
+			<label>时间：</label>
+			<input type="text"  v-model="addData.dayOfWeek" placeholder="周一十点零分：1-10-00"/>
+			<label>地点：</label>
+			<input type="text"  v-model="addData.location" placeholder="一号楼c201"/>
+			<label>老师：</label>
+			<input type="text"  v-model="addData.teacher" placeholder="请输入老师名"/>
+			<label>课程编号：</label>
+			<input type="text"  v-model="addData.courseId" placeholder="请输入课程编号"/>
+			<label>是否必修：</label>
+			<input type="text"  v-model="addData.categoryId" placeholder="是：1，否：0"/>
 			
-			<view class="form-group">
-				<label>时间：</label>
-				<input type="text"  v-model="addData.addTime" placeholder="周一十点零分：1-10-00"/>
-			</view>
+<!-- 			<label>是否必修：</label>
+			<radio-group v-model="addData.categoryId">
+			  <label class="radio-item">
+			    <radio :value="true" /> 是
+			    <radio :value="false" /> 否
+			  </label>
+			</radio-group> -->
 			
-			<view class="form-group">
-				<label>地点：</label>
-				<input type="text"  v-model="addData.addLocation" placeholder="一号楼c201"/>
-			</view>
-			
-			<view class="form-group">
-				<label>老师：</label>
-				<input type="text"  v-model="addData.addTeacher" placeholder="请输入老师名"/>
-			</view>
-			
-		   <view class="form-group">
-		      <label>是否必修：</label>
-		      <radio-group v-model="addData.addMust">
-		        <label class="radio-item">
-		          <radio :value="true" /> 是
-		        </label>
-		        <label class="radio-item">
-		          <radio :value="false" /> 否
-		        </label>
-		      </radio-group>
-		    </view>
 			<button class="btn-font btn-comfirmAdd" @click="confirmAdd()">确认添加</button>
+			<button class="btn-font btn-comfirmAdd" @click="excelUpload()">excel批量添加</button>
 		</view>
-
 	</uni-popup>	
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+	import { ref, onMounted } from 'vue'
+	import { onLoad } from '@dcloudio/uni-app'
 
-const titleValue = ref('周课表')
-const otherTitle = ref('日课表')
-const popupAdd = ref(null)
-const courseList = ref([])
-const loading = ref(false)
-const addData = ref({
-  addName: '',
-  addTime: '',
-  addLocation: '',
-  addTeacher: '',
-  addMust: ''
+	const titleValue = ref('周课表')
+	const otherTitle = ref('日课表')
+	const popupAdd = ref(null)
+	const courseList = ref([])
+	const loading = ref(false)
+	const studentIdT=ref('')
+
+
+	// 视图控制
+	const isWeekView = ref(true)
+	// 存储今日星期数（1-7）
+	const todayWeek = ref(0)
+	// 存储今日课程
+	const todayCourses = ref([])
+
+	function gotoPage(path) {
+	  uni.navigateTo({ url: path })
+	}
+
+	// 切换视图
+	function changeView() {
+	  isWeekView.value = !isWeekView.value
+	  titleValue.value = isWeekView.value ? '周课表' : '日课表'
+	  otherTitle.value = isWeekView.value ? '日课表' : '周课表'
+	}
+
+	function addCourse() {
+	  popupAdd.value.open('center')
+	}
+
+	// 获取课程列表（保持原有逻辑）
+	const getCourseList = () => {
+	  loading.value = true
+	  uni.request({
+		url: `http://localhost:3001/courseList?username=${studentIdT.value}`,
+		// url: `http://localhost:3001/courseList`,
+		method: 'GET',
+		success: (res) => {
+		  if (res.statusCode === 200) {
+			courseList.value = res.data
+			// 获取课程数据后，立即过滤出今日课程
+			filterTodayCourses()
+		  }
+		},
+		complete: () => loading.value = false
+	  })
+	}
+
+	// 根据星期数筛选课程（保持原有逻辑）
+	const getCoursesByWeek = (week) => {
+	  return courseList.value.filter(item => {
+		const timeWeek = parseInt(item.dayOfWeek.split('-')[0])
+		return timeWeek === week
+	  })
+	}
+
+	// 格式化时间显示（保持原有逻辑）
+	const formatTime = (timeStr) => {
+	  const parts = timeStr.split('-')
+	  return `${parts[1]}:${parts[2]}`
+	}
+
+	// 过滤今日课程
+	const filterTodayCourses = () => {
+		todayCourses.value = courseList.value.filter(item => {
+		const timeWeek = parseInt(item.dayOfWeek.split('-')[0])
+		return timeWeek === todayWeek.value
+	  })
+	}
+	
+	const addData = ref({
+		studentId: '',	//对应学生id
+		courseName: '',     // 对应后端 name
+		dayOfWeek: '',     // 对应后端 time
+		location: '', // 对应后端 location
+		teacher: '',  // 对应后端 teacher
+		courseId: '',     // 对应课程id
+		categoryId: ''    // 对应后端 categoryId
+	})
+		//确认添加课表
+	const confirmAdd =()=>{
+		 uni.request({
+			url: 'http://localhost:3001/courseList', // 接口地址
+			method: 'POST',
+			data: addData.value,
+			success: (res) => {
+				if (res.statusCode === 201) {
+					console.log('sad')
+					console.log(addData.value.categoryId)
+					uni.showToast({ title: '添加成功', icon: 'success' })
+					setTimeout(() => {
+					   // popupAdd.value.close()
+					}, 1500)
+				} else {
+					uni.showToast({ title: '添加失败', icon: 'none' })
+				}
+			 },
+			 fail: () => {
+				uni.showToast({ title: '网络异常，请检查连接', icon: 'none' })
+			 }
+		})
+	}
+onLoad((options) =>{
+	studentIdT.value=options.studentId;
+	addData.value.studentId=options.studentId;
+	console.log(options.studentId); // 123
 })
-
-// 视图控制
-const isWeekView = ref(true)
-// 存储今日星期数（1-7）
-const todayWeek = ref(0)
-// 存储今日课程
-const todayCourses = ref([])
-
-function gotoPage(path) {
-  uni.navigateTo({ url: path })
-}
-
-// 切换视图
-function changeView() {
-  isWeekView.value = !isWeekView.value
-  titleValue.value = isWeekView.value ? '周课表' : '日课表'
-  otherTitle.value = isWeekView.value ? '日课表' : '周课表'
-}
-
-function addCourse() {
-  popupAdd.value.open('center')
-}
-
-// 获取课程列表（保持原有逻辑）
-const getCourseList = () => {
-  loading.value = true
-  uni.request({
-    url: 'http://localhost:3000/courseList',
-    method: 'GET',
-    success: (res) => {
-      if (res.statusCode === 200) {
-        courseList.value = res.data
-        // 获取课程数据后，立即过滤出今日课程
-        filterTodayCourses()
-      }
-    },
-    complete: () => loading.value = false
-  })
-}
-
-// 根据星期数筛选课程（保持原有逻辑）
-const getCoursesByWeek = (week) => {
-  return courseList.value.filter(item => {
-    const timeWeek = parseInt(item.location.split('-')[0])
-    return timeWeek === week
-  })
-}
-
-// 格式化时间显示（保持原有逻辑）
-const formatTime = (timeStr) => {
-  const parts = timeStr.split('-')
-  return `${parts[1]}:${parts[2]}`
-}
-
-// 过滤今日课程
-const filterTodayCourses = () => {
-  todayCourses.value = courseList.value.filter(item => {
-    const timeWeek = parseInt(item.location.split('-')[0])
-    return timeWeek === todayWeek.value
-  })
-}
-
 onMounted(() => {
   // 获取今日星期数
   const now = new Date()
@@ -175,6 +198,8 @@ onMounted(() => {
 page{
 			background-image: url('/static/image/bk.png');
 			background-size: cover;
+			    overflow-y: auto; /* 页面内容超出时显示垂直滚动条 */
+			    height: 100vh; /* 固定页面高度为视口高度 *
 	}
 	.title{
 		position: absolute;
@@ -238,12 +263,11 @@ page{
 	.btn-comfirmAdd{
 		width: 188px;
 		height: 48px;
-		position: absolute;
-			top: 300px;
-			right: 24px;
-	}
-	
 
+		// position: absolute;
+		// 	top: 270px;
+		// 	right: 185px;
+	}
 	.content {
 		display: flex;
 		flex-direction: column;
@@ -253,7 +277,7 @@ page{
 	
 	.popContainer{
 		width: 680px;
-		height: 332px;
+		height: 260px;
 		background-color: #FFFFFF;
 		border-radius:12px 12px 12px 12px;
 		display: flex;
@@ -262,17 +286,17 @@ page{
 			justify-content: center;
 			padding: 40px;
 			gap: 20px;
+			flex-wrap: wrap; 
+		
+			
+		margin-bottom: 30rpx;
+		font-family: "PingFang SC", sans-serif;
+		font-weight: 500;
+		font-size: 20px;
+		line-height: 28px;
+		letter-spacing: 0;
+		color: #1D2129;
 	}
-	.form-group {
-	  margin-bottom: 30rpx;
-	  font-family: "PingFang SC", sans-serif;
-	  font-weight: 500;
-	  font-size: 20px;
-	  line-height: 28px;
-	  letter-spacing: 0;
-	  color: #1D2129;
-	}
-
 	.container{
 		position: absolute;
 			top: 80px;

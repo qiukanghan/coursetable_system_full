@@ -1,0 +1,134 @@
+{
+  "courseList": [
+    {
+      "id": 1,
+      "courseId": "101",
+      "courseName": "物理",
+      "dayOfWeek": "1-9-12",
+      "location": "一号楼",
+      "teacher": "林彪",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "id": 2,
+      "courseId": "102",
+      "courseName": "语文",
+      "dayOfWeek": "2-4-8",
+      "location": "二号楼",
+      "teacher": "王力宏",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "id": 3,
+      "courseId": "103",
+      "courseName": "数学",
+      "dayOfWeek": "3-2-8",
+      "location": "二号楼",
+      "teacher": "陈粒",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "id": 4,
+      "courseId": "104",
+      "courseName": "英语",
+      "dayOfWeek": "4-8-8",
+      "location": "二号楼",
+      "teacher": "周杰伦",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "id": 5,
+      "courseId": "105",
+      "courseName": "化学",
+      "dayOfWeek": "5-8-8",
+      "location": "二号楼",
+      "teacher": "张三",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "id": 6,
+      "courseId": "106",
+      "courseName": "生物",
+      "dayOfWeek": "6-8-8",
+      "location": "二号楼",
+      "teacher": "王五",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "id": 7,
+      "courseId": "107",
+      "courseName": "历史",
+      "dayOfWeek": "7-8-8",
+      "location": "二号楼",
+      "teacher": "zch",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "id": 8,
+      "courseId": "108",
+      "courseName": "政治",
+      "dayOfWeek": "1-8-8",
+      "location": "二号楼",
+      "teacher": "小华",
+      "categoryId": "1",
+      "studentId": "admin"
+    },
+    {
+      "studentId": "",
+      "courseName": "测试添加",
+      "dayOfWeek": "2-20-2",
+      "location": "征信楼",
+      "teacher": "周晨辉",
+      "courseId": "123",
+      "categoryId": "",
+      "id": 9
+    },
+    {
+      "studentId": "admin",
+      "courseName": "测试2",
+      "dayOfWeek": "2-22-2",
+      "location": "333",
+      "teacher": "333",
+      "courseId": "123",
+      "categoryId": "1",
+      "id": 10
+    },
+    {
+      "studentId": "admin",
+      "courseName": "22",
+      "dayOfWeek": "2-2-22",
+      "location": "213",
+      "teacher": "21312",
+      "courseId": "21323",
+      "categoryId": "0",
+      "id": 11
+    },
+    {
+      "studentId": "admin",
+      "courseName": "22",
+      "dayOfWeek": "2-2-223",
+      "location": "213",
+      "teacher": "21312",
+      "courseId": "213233",
+      "categoryId": "0",
+      "id": 12
+    },
+    {
+      "studentId": "admin",
+      "courseName": "22",
+      "dayOfWeek": "2-2-223",
+      "location": "213",
+      "teacher": "21312",
+      "courseId": "213233",
+      "categoryId": "0",
+      "id": 13
+    }
+  ]
+}

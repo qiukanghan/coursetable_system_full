@@ -7,20 +7,17 @@
 			<form class="login-form">
 			  <view class="form-group">
 				<label>用户名：</label>
-				<input type="text" v-model="formData.username" placeholder="请输入用户名"/>
-			  </view>
-			  
-			  <view class="form-group">
+				<input type="text" v-model="formData.studentId" placeholder="请输入用户名"/>
+
 				<label>密码：</label>
-				<input type="text" v-model="formData.password" placeholder="请输入密码"/>
-			</view>
-			
-			  <view class="form-group">
+				<input type="password" v-model="formData.password" placeholder="请输入密码"/>
+
 				<label>确认密码：</label>
-				<input type="text" v-model="formData.checkpwd" placeholder="再次输入密码"/>			
+				<input type="password" v-model="formData.checkpwd" placeholder="再次输入密码"/>			
 			  </view>
 			  
 			  <button class="btn-register" @click="register()">注册</button>
+			  <button class="btn-register" @click="gotoPage('/pages/index/index')">取消注册</button>
 			</form>
 		  </view>
 	</uni-popup>
@@ -40,13 +37,13 @@
 	})
 	
 const formData = ref({
-  username: '',
+  studentId: '',
   password: '',
   checkpwd: ''
 })
 
 const register = () => {
-  if (!formData.value.username) {
+  if (!formData.value.studentId) {
 	uni.showToast({ title: '请输入用户名', icon: 'none' })
     return
   }
@@ -55,10 +52,10 @@ const register = () => {
     return
   }
  uni.request({
-     url: 'http://localhost:3013/users', // 接口地址
+     url: 'http://localhost:3000/users', // 接口地址
      method: 'POST',
      data: {
-       username: formData.value.username.trim(),
+       studentId: formData.value.studentId.trim(),
        password: formData.value.password,
      },
      success: (res) => {
