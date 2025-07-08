@@ -1,139 +1,201 @@
 <template>
 	<view class="pageBg" />
 	<text class="title">{{titleValue}}</text>
-	<button class="btn-change btn-font"  @click="changeTime()">查看{{otherTitle}}</button>
+	<button class="btn-change btn-font"  @click="changeView()">查看{{otherTitle}}</button>
 	<button class="btn-add btn-font"  @click="addCourse()">添加课表</button>
 	<button class="btn-exit btn-font"  @click="gotoPage('/pages/index/index')">退出登录</button>
 	
-	  <view class="container">
-		<!-- 按星期分组容器（周一到周日） -->
+	<!-- 周课表视图 - 使用v-if控制显示 -->
+	<view class="container" v-if="isWeekView">
 		<view class="week-container">
-		  <!-- 循环渲染周一到周日列 -->
-		  <view class="week-column" v-for="week in 7" :key="week">
-			<view class="week-title">
-			  {{ ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][week - 1] }}
+			<view class="week-column" v-for="week in 7" :key="week">
+				<view class="week-title">
+					{{ ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][week - 1] }}
+				</view>
+				<view class="course-item" v-for="(item, index) in getCoursesByWeek(week)" :key="index"
+				:style="{ backgroundColor: item.categoryId === '1' ? '#e6f3ff' : 'white' }">
+					<view class="course-title">课程名称：{{ item.courseName }}</view>
+					<view>时间：{{ formatTime(item.dayOfWeek)}}</view>
+					<view>地点：{{ item.location}}</view>
+					<view>讲师：{{ item.teacher }}</view>
+					<view>课程ID：{{ item.courseId }}</view>
+				</view>
 			</view>
-			<!-- 渲染对应星期的课程 -->
-			<view class="course-item" v-for="(item, index) in getCoursesByWeek(week)" :key="index"
-				  :style="{ backgroundColor: item.isMust === '1' ? '#e6f3ff' : 'white' }"
-			>
-			  <view class="course-title">课程名称：{{ item.name }}</view>
-			  <view>发布人：{{ item.time }}</view>
-			  <view>时间：{{ formatTime(item.location) }}</view>
-			  <view>讲师：{{ item.teacher }}</view>
-			  <view>课程ID：{{ item.id }}</view>
-			</view>
-		  </view>
 		</view>
-	  </view>
+	</view>
+	<!-- 日课表视图 - 使用v-else控制显示 -->
+	<view class="container day-view" v-else>
+		<view class="day-header">
+			<text class="day-title">今日（{{ ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][todayWeek - 1] }}）课表</text>
+		</view>
+		<view class="day-course-container">
+			<view class="course-item" v-for="(item, index) in todayCourses" :key="index"
+			:style="{ backgroundColor: item.categoryId === '1' ? '#e6f3ff' : 'white' }">
+					<view class="course-title">课程名称：{{ item.courseName }}</view>
+					<view>时间：{{ formatTime(item.dayOfWeek)}}</view>
+					<view>地点：{{ item.location}}</view>
+					<view>讲师：{{ item.teacher }}</view>
+					<view>课程ID：{{ item.courseId }}</view>
+			</view>
+			<view class="empty-state" v-if="todayCourses.length === 0">
+				今日没有课程安排
+			</view>
+		</view>
+	</view>
 
 	<uni-popup  ref="popupAdd" type="center" v-bind:is-mask-click="true">
 		<view class="popContainer">
-			<view class="form-group">
-				<label>课程名：</label>
-				<input type="text"  v-model="addData.addName" placeholder="请输入用户名"/>
-			</view>
+			<label>课程名：</label>
+			<input type="text"  v-model="addData.courseName" placeholder="请输入课程名"/>
+			<label>时间：</label>
+			<input type="text"  v-model="addData.dayOfWeek" placeholder="周一十点零分：1-10-00"/>
+			<label>地点：</label>
+			<input type="text"  v-model="addData.location" placeholder="一号楼c201"/>
+			<label>老师：</label>
+			<input type="text"  v-model="addData.teacher" placeholder="请输入老师名"/>
+			<label>课程编号：</label>
+			<input type="text"  v-model="addData.courseId" placeholder="请输入课程编号"/>
+			<label>是否必修：</label>
+			<input type="text"  v-model="addData.categoryId" placeholder="是：1，否：0"/>
 			
-			<view class="form-group">
-				<label>时间：</label>
-				<input type="text"  v-model="addData.addTime" placeholder="周一十点零分：1-10-00"/>
-			</view>
+<!-- 			<label>是否必修：</label>
+			<radio-group v-model="addData.categoryId">
+			  <label class="radio-item">
+			    <radio :value="true" /> 是
+			    <radio :value="false" /> 否
+			  </label>
+			</radio-group> -->
 			
-			<view class="form-group">
-				<label>地点：</label>
-				<input type="text"  v-model="addData.addLocation" placeholder="一号楼c201"/>
-			</view>
-			
-			<view class="form-group">
-				<label>老师：</label>
-				<input type="text"  v-model="addData.addTeacher" placeholder="请输入老师名"/>
-			</view>
-			
-		   <view class="form-group">
-		      <label>是否必修：</label>
-		      <radio-group v-model="addData.addMust">
-		        <label class="radio-item">
-		          <radio :value="true" /> 是
-		        </label>
-		        <label class="radio-item">
-		          <radio :value="false" /> 否
-		        </label>
-		      </radio-group>
-		    </view>
 			<button class="btn-font btn-comfirmAdd" @click="confirmAdd()">确认添加</button>
+			<button class="btn-font btn-comfirmAdd" @click="excelUpload()">excel批量添加</button>
 		</view>
-
 	</uni-popup>	
-	
 </template>
 
 <script setup>
 	import { ref, onMounted } from 'vue'
-	const isWeek=ref(true)
-	function gotoPage(path){
-		  uni.navigateTo({ url: path })
+	import { onLoad } from '@dcloudio/uni-app'
+
+	const titleValue = ref('周课表')
+	const otherTitle = ref('日课表')
+	const popupAdd = ref(null)
+	const courseList = ref([])
+	const loading = ref(false)
+	const studentIdT=ref('')
+
+
+	// 视图控制
+	const isWeekView = ref(true)
+	// 存储今日星期数（1-7）
+	const todayWeek = ref(0)
+	// 存储今日课程
+	const todayCourses = ref([])
+
+	function gotoPage(path) {
+	  uni.navigateTo({ url: path })
 	}
-	const titleValue=ref('周课表')
-	const otherTitle=ref('日课表')
-	function changeTime(){
-		let temp=titleValue.value;
-		titleValue.value=otherTitle.value;
-		otherTitle.value=temp;
+
+	// 切换视图
+	function changeView() {
+	  isWeekView.value = !isWeekView.value
+	  titleValue.value = isWeekView.value ? '周课表' : '日课表'
+	  otherTitle.value = isWeekView.value ? '日课表' : '周课表'
 	}
-	
-	const popupAdd = ref(null)        // 初始弹窗引用
-	function addCourse(){
-		popupAdd.value.open('center')
+
+	function addCourse() {
+	  popupAdd.value.open('center')
 	}
-	const addData = ref({
-	  addName: '',
-	  addTime: '',
-	  addLocation: '',
-	  addTeacher: '',
-	  addMust: ''
-	})
-		
-		
-		
-	const courseList = ref([]);
-	const loading = ref(false);
+
 	// 获取课程列表（保持原有逻辑）
 	const getCourseList = () => {
-	  loading.value = true;
+	  loading.value = true
 	  uni.request({
-	    url: 'http://localhost:3013/courseList',
-	    method: 'GET',
-	    success: (res) => {
-	      if (res.statusCode === 200) {
-	        courseList.value = res.data;
-	      }
-	    },
-	    complete: () => loading.value = false
-	  });
-	};
-	
-	// 根据星期数筛选课程（核心排序逻辑）
+		url: `http://localhost:3001/courseList?username=${studentIdT.value}`,
+		// url: `http://localhost:3001/courseList`,
+		method: 'GET',
+		success: (res) => {
+		  if (res.statusCode === 200) {
+			courseList.value = res.data
+			// 获取课程数据后，立即过滤出今日课程
+			filterTodayCourses()
+		  }
+		},
+		complete: () => loading.value = false
+	  })
+	}
+
+	// 根据星期数筛选课程（保持原有逻辑）
 	const getCoursesByWeek = (week) => {
-	  // 筛选出时间第一位数字等于当前星期的课程
 	  return courseList.value.filter(item => {
-	    // 假设时间格式为 "1-10-10"，取第一位数字（星期）
-	    const timeWeek = parseInt(item.location.split('-')[0]);
-	    return timeWeek === week;
-	  });
-	};
-	
-	// 格式化时间显示（去除星期部分）
+		const timeWeek = parseInt(item.dayOfWeek.split('-')[0])
+		return timeWeek === week
+	  })
+	}
+
+	// 格式化时间显示（保持原有逻辑）
 	const formatTime = (timeStr) => {
-	  const parts = timeStr.split('-');
-	  return `${parts[1]}:${parts[2]}`; // 显示 "10:10"
-	};
+	  const parts = timeStr.split('-')
+	  return `${parts[1]}:${parts[2]}`
+	}
+
+	// 过滤今日课程
+	const filterTodayCourses = () => {
+		todayCourses.value = courseList.value.filter(item => {
+		const timeWeek = parseInt(item.dayOfWeek.split('-')[0])
+		return timeWeek === todayWeek.value
+	  })
+	}
 	
-	onMounted(() => getCourseList());
-	
+	const addData = ref({
+		studentId: '',	//对应学生id
+		courseName: '',     // 对应后端 name
+		dayOfWeek: '',     // 对应后端 time
+		location: '', // 对应后端 location
+		teacher: '',  // 对应后端 teacher
+		courseId: '',     // 对应课程id
+		categoryId: ''    // 对应后端 categoryId
+	})
+		//确认添加课表
+	const confirmAdd =()=>{
+		 uni.request({
+			url: 'http://localhost:3001/courseList', // 接口地址
+			method: 'POST',
+			data: addData.value,
+			success: (res) => {
+				if (res.statusCode === 201) {
+					console.log('sad')
+					console.log(addData.value.categoryId)
+					uni.showToast({ title: '添加成功', icon: 'success' })
+					setTimeout(() => {
+					   // popupAdd.value.close()
+					}, 1500)
+				} else {
+					uni.showToast({ title: '添加失败', icon: 'none' })
+				}
+			 },
+			 fail: () => {
+				uni.showToast({ title: '网络异常，请检查连接', icon: 'none' })
+			 }
+		})
+	}
+onLoad((options) =>{
+	studentIdT.value=options.studentId;
+	addData.value.studentId=options.studentId;
+	console.log(options.studentId); // 123
+})
+onMounted(() => {
+  // 获取今日星期数
+  const now = new Date()
+  let day = now.getDay()
+  todayWeek.value = day === 0 ? 7 : day
+  
+  getCourseList()
+})
 </script>
 
 <style lang="scss" scoped>
-	page{
+// 完全保持原有样式不变
+page{
 			background-image: url('/static/image/bk.png');
 			background-size: cover;
 	}
@@ -199,12 +261,11 @@
 	.btn-comfirmAdd{
 		width: 188px;
 		height: 48px;
-		position: absolute;
-			top: 300px;
-			right: 24px;
-	}
-	
 
+		// position: absolute;
+		// 	top: 270px;
+		// 	right: 185px;
+	}
 	.content {
 		display: flex;
 		flex-direction: column;
@@ -214,7 +275,7 @@
 	
 	.popContainer{
 		width: 680px;
-		height: 332px;
+		height: 260px;
 		background-color: #FFFFFF;
 		border-radius:12px 12px 12px 12px;
 		display: flex;
@@ -223,17 +284,17 @@
 			justify-content: center;
 			padding: 40px;
 			gap: 20px;
+			flex-wrap: wrap; 
+		
+			
+		margin-bottom: 30rpx;
+		font-family: "PingFang SC", sans-serif;
+		font-weight: 500;
+		font-size: 20px;
+		line-height: 28px;
+		letter-spacing: 0;
+		color: #1D2129;
 	}
-	.form-group {
-	  margin-bottom: 30rpx;
-	  font-family: "PingFang SC", sans-serif;
-	  font-weight: 500;
-	  font-size: 20px;
-	  line-height: 28px;
-	  letter-spacing: 0;
-	  color: #1D2129;
-	}
-
 	.container{
 		position: absolute;
 			top: 80px;
@@ -250,19 +311,26 @@
 /* 横向排列周一到周日 */
 .week-container {
   display: flex;
-  gap: 10px; /* 列之间的间距 */
-  overflow-x: auto; /* 超出宽度可滚动 */
-  padding-bottom: 10px;
+  gap: 10px;
+  overflow-x: auto; /* 保留横向滚动（列过多时） */
+  padding: 10px;
+  /* 移除固定高度和垂直滚动，由列自己控制滚动 */
 }
 
-/* 每列样式 */
+/* 每列样式（核心修改） */
 .week-column {
-  min-width: 200px; /* 每列最小宽度 */
+  min-width: 200px;
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 10px;
+  flex-shrink: 0; /* 防止列宽被压缩 */
+  
+  /* 列固定高度，内容过多时内部滚动 */
+  height: 480px; 
+  overflow-y: auto; /* 启用列内垂直滚动 */
 }
 
+/* 每列标题固定在顶部 */
 .week-title {
   font-weight: bold;
   text-align: center;
@@ -270,19 +338,55 @@
   padding: 5px;
   background-color: #e0e0e0;
   border-radius: 4px;
+  
+  /* 标题固定，不随内容滚动 */
+  position: sticky; 
+  top: 0;
+  z-index: 10; /* 确保标题在课程项上方 */
 }
 
 /* 课程项样式 */
-.course-item {
-  background-color: white;
-  border-radius: 6px;
-  padding: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
+  .course-item {
+    background-color: white;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 12px; /* 增加课程项之间的间距 */
+    font-size: 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* 轻微阴影区分课程 */
+  }
 
 .course-title {
   font-weight: bold;
   margin-bottom: 5px;
+}
+
+// 新增日课表样式 - 尽量保持原有样式结构
+.day-view {
+  .day-header {
+    padding: 16px 24px;
+    font-size: 20px;
+    font-weight: bold;
+    /* 移除 sticky 定位，改用 margin-bottom 留出空间 */
+    margin-bottom: 16px;
+  }
+  
+  .day-course-container {
+    display: flex;
+    flex-direction: column;
+    /* 关键修复：设置内边距和滚动区域 */
+    padding: 0 24px;
+    max-height: calc(100% - 80px); /* 调整为实际标题高度+内边距 */
+    overflow-y: auto;
+    
+    /* 修复顶部圆角 */
+    border-radius: 0 0 12px 12px;
+    margin-top: -16px; /* 抵消标题的 margin-bottom */
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+  }
 }
 </style>

@@ -1,0 +1,34 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "studentId": "admin",
+      "password": "123456"
+    },
+    {
+      "id": 2,
+      "studentId": "testuser",
+      "password": "test123"
+    },
+    {
+      "studentId": "3312020202201909",
+      "password": "123456",
+      "id": 3
+    },
+    {
+      "studentId": "asd",
+      "password": "12",
+      "id": 4
+    },
+    {
+      "studentId": "zxzx",
+      "password": "123213",
+      "id": 5
+    },
+    {
+      "studentId": "abc123",
+      "password": "123456",
+      "id": 6
+    }
+  ]
+}
