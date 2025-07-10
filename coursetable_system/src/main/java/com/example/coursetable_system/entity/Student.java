@@ -11,7 +11,7 @@ public class Student {
     @Column(name = "student_id", length = 20)
     private String studentId; // 学号（主键）
 
-    @Column(name = "name", nullable = false, length = 50)
+    @Column(name = "name",length = 50)
     private String name; // 姓名
 
     @Column(name = "password", nullable = false, length = 100)

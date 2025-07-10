@@ -16,3 +16,4 @@ spring:
   # 其他配置...
 server:
   port: 8080
+  address: 0.0.0.0  # 关键：允许外部 IP 访问（默认是 localhost，仅本机可访问

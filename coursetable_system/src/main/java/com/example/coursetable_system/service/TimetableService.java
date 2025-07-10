@@ -18,41 +18,57 @@ public class TimetableService {
         this.courseRepository = courseRepository;
     }
 
-    // 获取周视图课表，参数为 String 类型的 studentId
+    // 获取周视图课表
     public Map<Integer, List<Course>> getWeeklyTimetable(String studentId) {
         List<Course> courses = courseRepository.findByStudentId(studentId);
 
         Map<Integer, List<Course>> weeklyTimetable = new TreeMap<>();
-        // 初始化周一到周日的课程列表
         for (int day = 1; day <= 7; day++) {
             weeklyTimetable.put(day, new ArrayList<>());
         }
 
-        // 按星期分组课程
+        // 从"1-10-00"格式中提取星期部分（第一位数字）
         courses.forEach(course -> {
-            Integer dayOfWeek = course.getDayOfWeek();
-            if (dayOfWeek != null && dayOfWeek >= 1 && dayOfWeek <= 7) {
-                weeklyTimetable.get(dayOfWeek).add(course);
+            String dayOfWeekStr = course.getDayOfWeek();
+            if (dayOfWeekStr != null && !dayOfWeekStr.isEmpty()) {
+                try {
+                    int dayOfWeek = Integer.parseInt(dayOfWeekStr.split("-")[0]); // 提取星期部分
+                    if (dayOfWeek >= 1 && dayOfWeek <= 7) {
+                        weeklyTimetable.get(dayOfWeek).add(course);
+                    }
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    // 格式错误，忽略该课程或记录日志
+                }
             }
         });
 
-        // 按开始时间排序每天的课程
+        // 按时间排序（从"1-10-00"中提取时间部分）
         weeklyTimetable.values().forEach(list ->
-                list.sort(Comparator.comparing(Course::getStartTime))
+                list.sort(Comparator.comparing(course -> {
+                    String[] parts = course.getDayOfWeek().split("-");
+                    return parts.length >= 3 ? parts[1] + parts[2] : ""; // 按"时+分"排序
+                }))
         );
 
         return weeklyTimetable;
     }
 
-    // 获取日视图课表，参数为 String 类型的 studentId
+    // 获取日视图课表
     public List<Course> getDailyTimetable(String studentId, Integer dayOfWeek) {
         if (dayOfWeek < 1 || dayOfWeek > 7) {
             throw new IllegalArgumentException("星期参数无效");
         }
 
-        List<Course> courses = courseRepository.findByStudentIdAndDayOfWeek(studentId, dayOfWeek);
-        // 按开始时间排序
-        courses.sort(Comparator.comparing(Course::getStartTime));
+        // 构造匹配格式（如"1-%-%""表示星期一的所有课程）
+        String dayPattern = dayOfWeek + "-%";
+        List<Course> courses = courseRepository.findByStudentIdAndDayOfWeekPattern(studentId, dayPattern);
+
+        // 按时间排序（从"1-10-00"中提取时间部分）
+        courses.sort(Comparator.comparing(course -> {
+            String[] parts = course.getDayOfWeek().split("-");
+            return parts.length >= 3 ? parts[1] + parts[2] : ""; // 按"时+分"排序
+        }));
+
         return courses;
     }
 }

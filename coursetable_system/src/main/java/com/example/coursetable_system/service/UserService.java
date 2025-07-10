@@ -21,9 +21,6 @@ public class UserService {
         if (studentRepository.findByStudentId(student.getStudentId()).isPresent()) {
             throw new Exception("学号已存在：" + student.getStudentId());
         }
-        if (studentRepository.findByEmail(student.getEmail()).isPresent()) {
-            throw new Exception("邮箱已存在：" + student.getEmail());
-        }
         student.setPassword(passwordEncoder.encode(student.getPassword()));
         return studentRepository.save(student);
     }

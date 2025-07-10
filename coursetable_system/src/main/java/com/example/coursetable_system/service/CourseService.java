@@ -127,13 +127,11 @@ public class CourseService {
             throw new IllegalArgumentException("无权修改他人课程：" + existingCourse.getCourseId());
         }
 
-        // 4. 更新课程字段（仅更新非主键字段）
+        // 4. 更新课程字段（删除startTime和endTime的更新，dayOfWeek类型改为String）
         existingCourse.setCourseName(updatedCourse.getCourseName());
         existingCourse.setTeacher(updatedCourse.getTeacher());
         existingCourse.setLocation(updatedCourse.getLocation());
-        existingCourse.setDayOfWeek(updatedCourse.getDayOfWeek());
-        existingCourse.setStartTime(updatedCourse.getStartTime());
-        existingCourse.setEndTime(updatedCourse.getEndTime());
+        existingCourse.setDayOfWeek(updatedCourse.getDayOfWeek()); // 现在接收String类型
         existingCourse.setCategoryId(updatedCourse.getCategoryId());
 
         return courseRepository.save(existingCourse);
@@ -189,10 +187,8 @@ public class CourseService {
                 course.setCourseName(getStringValue(row.getCell(1)));
                 course.setTeacher(getStringValue(row.getCell(2)));
                 course.setLocation(getStringValue(row.getCell(3)));
-                course.setDayOfWeek((int) row.getCell(4).getNumericCellValue()); // 星期为数字（1-7）
-                course.setStartTime(LocalTime.parse(getTimeString(row.getCell(5)), timeFormatter)); // 开始时间
-                course.setEndTime(LocalTime.parse(getTimeString(row.getCell(6)), timeFormatter));   // 结束时间
-                course.setCategoryId((long) row.getCell(7).getNumericCellValue()); // 类别 ID
+                course.setDayOfWeek(getStringValue(row.getCell(4))); // 不再强转为Integer
+                course.setCategoryId((long) row.getCell(5).getNumericCellValue()); // 类别 ID
 
                 courses.add(course);
             }

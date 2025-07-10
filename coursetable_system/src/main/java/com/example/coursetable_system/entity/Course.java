@@ -2,7 +2,6 @@ package com.example.coursetable_system.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalTime;
 
 @Data
 @Entity
@@ -21,15 +20,16 @@ public class Course {
     @Column(name = "location", length = 100)
     private String location; // 上课地点
 
-    @Column(name = "day_of_week")
-    private Integer dayOfWeek; // 星期（1-7，1=周一）
+    @Column(name = "day_of_week", length = 20) // 类型改为varchar(20)
+    private String dayOfWeek; // 字段类型从Integer改为String（存储格式如"1-10-00"）
 
-    @Column(name = "start_time")
-    private LocalTime startTime; // 开始时间
+    // 删除以下两个字段（对应数据库表删除的start_time和end_time）
+    // @Column(name = "start_time")
+    // private LocalTime startTime;
 
-    @Column(name = "end_time")
-    private LocalTime endTime; // 结束时间
+    // @Column(name = "end_time")
+    // private LocalTime endTime;
 
     @Column(name = "category_id")
-    private Long categoryId; // 仅保留课程类别 ID
+    private Long categoryId; // 课程类别 ID
 }

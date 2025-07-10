@@ -28,15 +28,8 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody Student student) {
         try {
             String token = userService.login(student.getStudentId(), student.getPassword());
-            Student loggedInStudent = userService.findByStudentId(student.getStudentId());
-
-            // 构建与 createCourse 类似的返回结构
-            java.util.Map<String, Object> response = new java.util.HashMap<>();
-            response.put("token", token);
-            response.put("studentId", loggedInStudent.getStudentId());
-            response.put("name", loggedInStudent.getName());
-
-            return ResponseEntity.ok(response);
+            // 仅返回studentId，与register方法保持一致
+            return ResponseEntity.ok(student.getStudentId());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
