@@ -28,7 +28,7 @@
 	  password: ''
 	})
 	function gotoPage(path) {
-	  uni.navigateTo({ url: path })
+		uni.navigateTo({ url: path })
 	}
 	// 核心登录逻辑
 	const login = () => {
@@ -45,16 +45,18 @@
 	  }
 	 uni.request({
 		// 查询用户数据
-		url: `http://localhost:3000/users?username=${formData.value.studentId.trim()}&password=${formData.value.password}`,
-		method: 'GET', // 使用 GET 请求查询用户
+		url: `http://10.27.195.175:8080/api/login`,
+		// url: `http://localhost:3000/users?studentId=${formData.value.studentId.trim()}&password=${formData.value.password}`,
+		method: 'POST', // 使用 GET 请求查询用户
+		// method:'GET',
+		data:formData.value,
 		success: (res) => {
 		  // 4. 登录成功处理
-		  if (res.statusCode === 200 && res.data.length > 0) {
+		  // if (res.statusCode === 200 && res.data.length > 0) {
+		  if (res.statusCode === 200 ) {
 			// 保存后端返回的令牌（用于后续接口身份验证）
 			const user = res.data[0]
-			// 跳转到首页
 			uni.navigateTo({ url: `/pages/home?studentId=${formData.value.studentId.trim()}`})
-			// 提示登录成功
 			uni.showToast({ title: '登录成功', icon: 'success' })
 			popup.value.close()
 		  } else {

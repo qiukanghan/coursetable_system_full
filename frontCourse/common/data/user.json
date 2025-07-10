@@ -29,6 +29,11 @@
       "studentId": "abc123",
       "password": "123456",
       "id": 6
+    },
+    {
+      "studentId": "admin",
+      "password": "123456",
+      "id": 7
     }
   ]
 }

@@ -52,7 +52,8 @@ const register = () => {
     return
   }
  uni.request({
-     url: 'http://localhost:3000/users', // 接口地址
+     // url: 'http://10.32.61.192:8080/api/register', // 接口地址
+	 url: `http://10.27.195.175:8080/api/register`,
      method: 'POST',
      data: {
        studentId: formData.value.studentId.trim(),
